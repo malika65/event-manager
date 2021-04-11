@@ -28,6 +28,21 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
+# EMAIL SETTINGS
+DEFAULT_EMAIL_FROM = 'kajias1553@gmail.com'
+EMAIL_BCC = 'Qualle'
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'kumarbeksydygaliev44@gmail.com'
+EMAIL_HOST_PASSWORD = '11111111'
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+SERVER_EMAIL = 'kumarbeksydygaliev44@gmail.com'
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -37,6 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'authe',
 ]
 
 MIDDLEWARE = [
@@ -83,6 +99,9 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
+
+
+AUTH_USER_MODEL = 'authe.Author'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
