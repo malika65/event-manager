@@ -9,4 +9,4 @@ def send_verifiy_link(message, email):
 
 # Отправка сообщения с сбросом пароля на почту
 def send_password_reset_link(message, email):
-    send_mail('Blog', message, settings.DEFAULT_EMAIL_FROM, [email,])
+    send_mail('Event manager', message, settings.DEFAULT_EMAIL_FROM, [email,])
