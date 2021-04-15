@@ -9,6 +9,8 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
+import os
+import datetime
 
 from pathlib import Path
 
@@ -29,18 +31,18 @@ ALLOWED_HOSTS = []
 
 
 # EMAIL SETTINGS
-DEFAULT_EMAIL_FROM = 'kajias1553@gmail.com'
+DEFAULT_EMAIL_FROM = 'muratbekovamalika00@gmail.com'
 EMAIL_BCC = 'Qualle'
 
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'kumarbeksydygaliev44@gmail.com'
-EMAIL_HOST_PASSWORD = '11111111'
+EMAIL_HOST_USER = 'muratbekovamalika00@gmail.com'
+EMAIL_HOST_PASSWORD = 'Maks2021'
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-SERVER_EMAIL = 'kumarbeksydygaliev44@gmail.com'
+SERVER_EMAIL = 'muratbekovamalika00@gmail.com'
 
 
 # Application definition
@@ -52,7 +54,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_yasg',
+    'rest_framework_simplejwt.token_blacklist',
     'authe',
+    'bot_event',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'event_app',
+    
 ]
 
 MIDDLEWARE = [
@@ -91,12 +100,29 @@ WSGI_APPLICATION = 'event_manager.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'django_bot',
+        'USER': 'maks',
+        'PASSWORD': 'maks123',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
+    },
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'NON_FIELD_ERRORS_KEY': 'error',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
 }
 
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=1),
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
+}
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
@@ -142,3 +168,6 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+TOKEN = '1614749492:AAHcfFo3nNnLI4A27lk27Q7a6s0rDWhOG1E'
+PROXY_URL = 'https://api.telegram.org/bot'

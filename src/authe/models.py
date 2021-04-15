@@ -10,24 +10,24 @@ class MainUserManager(BaseUserManager):
     Main user manager
     """
 
-    def create_user(self, username, password=None, is_active=None, **kwargs):
+    def create_user(self, email, password=None, is_active=None, **kwargs):
         """
-        Creates and saves a user with the given username and password
+        Creates and saves a user with the given email and password
         """
-        if not username:
-            raise ValueError('Users must have an username')
-        user = self.model(username=username, **kwargs)
+        if not email:
+            raise ValueError('Users must have an email')
+        user = self.model(email=email, **kwargs)
         user.set_password(password)
         if is_active is not None:
             user.is_active = is_active
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, password):
+    def create_superuser(self, email, password):
         """
         Creates and saves a superuser with the given username and password
         """
-        user = self.create_user(username, password=password)
+        user = self.create_user(email, password=password)
         user.is_admin = True
         user.is_superuser = True
         user.is_moderator = True
@@ -37,20 +37,15 @@ class MainUserManager(BaseUserManager):
 
 
 class Author(AbstractUser):
-    username = models.CharField(max_length=100, blank=False,
-                                unique=True, db_index=True, verbose_name='Никнейм', null=True)
+    username = models.CharField(max_length=100,blank=True,null=True)
     email = models.EmailField(unique=True, verbose_name='Электронная почта')
     password = models.CharField(blank=True, null=True, max_length=500)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     verified = models.BooleanField(default=False)
 
     objects = MainUserManager()
-    USERNAME_FIELD = 'username'
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
-
-    @property
-    def is_authenticated(self):
-        return True
 
     class Meta:
         verbose_name = 'Пользователь'
