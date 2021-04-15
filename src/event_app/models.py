@@ -32,5 +32,4 @@ class Link(models.Model):
         verbose_name = 'Ссылка'
         verbose_name_plural = 'Ссылки'
 
-    def __str__(self):
-        return self.title
+    
