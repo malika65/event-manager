@@ -3,8 +3,8 @@ from telegram import  KeyboardButton, ReplyKeyboardMarkup,InlineKeyboardButton,I
 
 keyboard = [
     [
-        KeyboardButton('🤠 Пользователь',callback_data='see'),
-        KeyboardButton('💸 Спонсор',callback_data='eat'),
+        KeyboardButton('🤠 Пользователь',callback_data='user'),
+        KeyboardButton('💸 Спонсор',callback_data='sponsor'),
     ]
 ]
 
@@ -13,15 +13,15 @@ keyboard_1 = ReplyKeyboardMarkup(keyboard,resize_keyboard=True)
 
 kb = [
     [
-        InlineKeyboardButton('🎦 Посмотреть',callback_data='see'),
-        InlineKeyboardButton('🍽️ Покушать',callback_data='eat'),
+        InlineKeyboardButton('🎦 Посмотреть',callback_data='1'),
+        InlineKeyboardButton('🍽️ Покушать',callback_data='2'),
     ],
-    [   InlineKeyboardButton('🎡 Развлекательное',callback_data='enjoy'),
-        InlineKeyboardButton('🖼️ Познавательное',callback_data='know'),
+    [   InlineKeyboardButton('🎡 Развлекательное',callback_data='3'),
+        InlineKeyboardButton('🖼️ Познавательное',callback_data='4'),
         ] ,   
     [
-        InlineKeyboardButton('🧗 Активный отдых',callback_data='active'),
-        InlineKeyboardButton('🛍️ Что купить?',callback_data='buy'),
+        InlineKeyboardButton('🧗 Активный отдых',callback_data='5'),
+        InlineKeyboardButton('🛍️ Что купить?',callback_data='6'),
     ],
     [
         InlineKeyboardButton('🔝 Топ 10',callback_data='top'),
@@ -29,3 +29,12 @@ kb = [
 ]
 
 keyboard_2 = InlineKeyboardMarkup(kb,resize_keyboard=True)
+
+btn_like = [
+    [
+        InlineKeyboardButton('👍',callback_data='like'),
+        InlineKeyboardButton('👎',callback_data='dislike'),
+    ]
+]
+
+keyboard_like = InlineKeyboardMarkup(btn_like,resize_keyboard=True)
