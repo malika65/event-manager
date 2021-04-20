@@ -44,60 +44,102 @@ def button_handler(update: Update, context: CallbackContext) -> None:
     bot = context.bot
     # This will define which button the user tapped on (from what you assigned to "callback_data". As I assigned them "1" and "2"):
     choose = query.data
-    
+
     # Now u can define what choice ("callback_data") do what like this:
-    post = Post.objects.filter(category=choose)
-    
-    for pop in post:
-        image = pop.images.all()
-        image = PostImage.objects.filter(post=pop)
-        img_list= []
-        listToStr = ',\n '.join([str(elem) for elem in pop.link_list])
+    if choose == '7':
+        bot.editMessageReplyMarkup(chat_id=query.message.chat_id,
+    message_id=query.message.message_id,
+    reply_markup=keyboard_2
+    )
+    elif '_' in choose:
+        subchoose = choose[2:]
+        choose = choose[0]
+        post = Post()
+        if subchoose == 'sale':
+            post = Post.objects.filter(category=choose,sale=True)
+        elif subchoose == 'all':
+            post = Post.objects.filter(category=choose)
+        elif subchoose == 'name':
+            post = Post.objects.filter(category=choose)
+            # update.message.reply_text(f"{post.title}")
 
-        for i in image:
-            img_list.append(str(i.images))
+        elif subchoose == 'near':
+            print("Near")
+            # Добавим в будущем карту
+        elif subchoose == 'top':
+            # Топ 
+            print("Top")
+        
+        for pop in post:
+            image = pop.images.all()
+            image = PostImage.objects.filter(post=pop)
+            img_list= []
+            listToStr = ',\n '.join([str(elem) for elem in pop.link_list])
 
-        media_group = list()
-        for number, url in enumerate(img_list):
-            if number == 1 :
-                media_group.append(InputMediaPhoto(media=url))
-            else:
-                media_group.append(InputMediaPhoto(media=url))
+            for i in image:
+                img_list.append(str(i.images))
 
-        bot.send_media_group(query.message.chat_id, media=media_group)
+            media_group = list()
+            for number, url in enumerate(img_list):
+                if number == 1 :
+                    media_group.append(InputMediaPhoto(media=url))
+                else:
+                    media_group.append(InputMediaPhoto(media=url))
 
-        for p in post:
+            bot.send_media_group(query.message.chat_id, media=media_group)
+
             btn_like = [
                 [
-                    InlineKeyboardButton(f'👍 {p.like_count}',callback_data='like'),
-                    InlineKeyboardButton(f'👎 {p.dislike_count}',callback_data='dislike'),
+                    InlineKeyboardButton(f'👍 {pop.like_count}',callback_data='like'),
+                    InlineKeyboardButton(f'👎 {pop.dislike_count}',callback_data='dislike')
                     ]
                 ]
-            keyboard_like = InlineKeyboardMarkup(btn_like,resize_keyboard=True)
 
+            keyboard_like = InlineKeyboardMarkup(btn_like,resize_keyboard=True)
+                    
             bot.send_message(chat_id=query.message.chat_id,
-            text=f"Название : {p.title}\nОписание : {p.description}\nКонтакты: {p.phone} \nМы в соц.сетях : {listToStr}",
+            text=f"Название : {pop.title}\nОписание : {pop.description}\nКонтакты: {pop.phone} \nМы в соц.сетях : {listToStr}",
             reply_markup=keyboard_like
             )
-        # указать дату на сегодня на русском
-        if sys.platform == 'win32':
-            locale.setlocale(locale.LC_ALL, 'rus_rus')
-        else:
-            locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
-
-        today = date.today()
-        d = today.strftime("%B %d, %Y")
-        bot.edit_message_text(chat_id=query.message.chat_id,
+    else:
+        kb_1 = [
+            [
+                InlineKeyboardButton('📆 Скоро',callback_data=f'{choose}_soon')
+            ],
+            [
+                InlineKeyboardButton('🛒 Скидки',callback_data=f'{choose}_sale')
+            ],
+            [   InlineKeyboardButton('📒 Посмотреть все',callback_data=f'{choose}_all')
+            ],
+            [
+                InlineKeyboardButton('📝 Выбрать по названию',callback_data=f'{choose}_name')
+                ] ,   
+            [
+                InlineKeyboardButton('🗺️ Рядом',callback_data=f'{choose}_near')
+            ],
+            [
+                InlineKeyboardButton('🔝 Топ 10',callback_data=f'{choose}_top')
+            ],
+            [
+                InlineKeyboardButton('⬅️ Назад',callback_data='7')
+            ]
+        ]
+        keyboard_3 = InlineKeyboardMarkup(kb_1,resize_keyboard=True)
+        # post = Post.objects.filter(category=choose)
+        
+        bot.editMessageReplyMarkup(chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text=f"Вот что мы нашли на {d}"
+        reply_markup=keyboard_3
         )
 
-def likes_handler(update: Update, context: CallbackContext) -> None:
-    query = update.callback_query
-    query.answer()
-    bot = context.bot
+      
 
-    choose = query.data
+# def likes_handler(update: Update, context: CallbackContext) -> None:
+#     query = update.callback_query
+#     query.answer()
+#     bot = context.bot
+
+#     choose = query.data
 
 
 class Command(BaseCommand):
@@ -128,6 +170,7 @@ class Command(BaseCommand):
         dp.add_handler(MessageHandler(Filters.text, who_are_you))
         # dp.add_handler(MessageHandler(Filters.text, handle_message))
         dp.add_handler(CallbackQueryHandler(button_handler))
+        # dp.add_handler(CallbackQueryHandler(options_filter))
         dp.add_error_handler(error)
 
         # запустить бесконечную обработку сообщений
