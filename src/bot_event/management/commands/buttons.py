@@ -6,6 +6,7 @@ keyboard = [
         KeyboardButton('🤠 Пользователь',callback_data='user'),
         KeyboardButton('💸 Спонсор',callback_data='sponsor'),
     ]
+    
 ]
 
 keyboard_1 = ReplyKeyboardMarkup(keyboard,resize_keyboard=True)
@@ -38,3 +39,30 @@ btn_like = [
 ]
 
 keyboard_like = InlineKeyboardMarkup(btn_like,resize_keyboard=True)
+
+
+
+# kb_1 = [
+#     [
+#         InlineKeyboardButton('📆 Скоро',callback_data='soon')
+#     ],
+#     [
+#         InlineKeyboardButton('🛒 Скидки',callback_data='sale')
+#     ],
+#     [   InlineKeyboardButton('📒 Посмотреть все',callback_data='see')
+#     ],
+#     [
+#         InlineKeyboardButton('📝 Выбрать по названию',callback_data='name')
+#         ] ,   
+#     [
+#         InlineKeyboardButton('🗺️ Рядом',callback_data='near')
+#     ],
+#     [
+#         InlineKeyboardButton('🔝 Топ 10',callback_data='top')
+#     ],
+#     [
+#         InlineKeyboardButton('⬅️ Назад',callback_data='7')
+#     ]
+# ]
+
+# keyboard_3 = InlineKeyboardMarkup(kb_1,resize_keyboard=True)

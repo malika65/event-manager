@@ -13,6 +13,7 @@ class Post(models.Model):
         ('5','Активный отдых'),
         ('6','Что купить?')        
     ]
+    sale = models.BooleanField(default=False,verbose_name='Скидки')
     category = models.CharField(max_length=50,choices=CHOICES,verbose_name='Категории')
     author = models.ForeignKey(Author, on_delete=models.CASCADE, default = None)
     phone = models.CharField(max_length=100, blank=True, verbose_name='Номер телефона')
