@@ -2,9 +2,9 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 from telegram.ext import *
 from telegram.utils.request import Request
+from telegram import Bot, Update
+from .buttons import keyboard_1, keyboard_2
 from telegram import  KeyboardButton, ReplyKeyboardMarkup,InlineKeyboardButton,InlineKeyboardMarkup
-from telegram import Bot,Update
-from .buttons import keyboard_1,keyboard_2
 from bot_event.views import sample_response
 from event_app.models import Post,PostImage
 from telebot.types import InputMediaPhoto, InputMediaVideo
@@ -14,16 +14,24 @@ import locale
 
 
 
+
 def start_command(update,context):
     update.message.reply_text("Если заинтересованы в сотрудничестве ,то жмите кнопку 💸 Спонсор \nЕсли вы в поисках новых ощущений или просто не знаете куда сходить , то жмите кнопку 🤠 Пользователь и забудьте об этих проблемах", reply_markup = keyboard_1)
 
-def help_command(update,context):
+def start_command(update, context):
+    update.message.reply_text(
+        "Type smth random to start", reply_markup=keyboard_1)
+
+
+def help_command(update, context):
     update.message.reply_text("Help command is work)")
 
-def who_are_you(update,context):
+
+def who_are_you(update, context):
     txt = str(update.message.text).lower()
     print(txt)
     if txt == '🤠 пользователь':
+
         update.message.reply_text("Выберите чем хотите заняться",reply_markup = keyboard_2)
     elif txt == '💸 спонсор':
         update.message.reply_text("Для регистрации перейдите на следующий сайт google.com . \nТут вы сможете опубликовать вашу информацию")
@@ -33,19 +41,39 @@ def who_are_you(update,context):
         update.message.reply_text(response)
 
 
-def error(update,context):
+def error(update, context):
     print(f"Update {update} caused error {context.error}")
-
 
 
 def button_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
+
     bot = context.bot
     # This will define which button the user tapped on (from what you assigned to "callback_data". As I assigned them "1" and "2"):
     choose = query.data
 
     # Now u can define what choice ("callback_data") do what like this:
+    if choose == 'see':
+        print("See")
+
+    if choose == 'eat':
+        print("Eat")
+
+    if choose == 'enjoy':
+        print("Enjoy")
+
+    if choose == 'know':
+        print("Know")
+
+    if choose == 'active':
+        print("Active")
+
+    if choose == 'buy':
+        print("Buy")
+
+    if choose == 'top':
+        print("Top")
     if choose == '7':
         bot.editMessageReplyMarkup(chat_id=query.message.chat_id,
     message_id=query.message.message_id,
@@ -142,11 +170,12 @@ def button_handler(update: Update, context: CallbackContext) -> None:
 #     choose = query.data
 
 
+
 class Command(BaseCommand):
     help = 'Telegram bot'
 
     def handle(self, *args, **options):
-        # подключение 
+        # подключение
         request = Request(
             connect_timeout=0.5,
             read_timeout=1.0,
@@ -154,7 +183,7 @@ class Command(BaseCommand):
         bot = Bot(
             request=request,
             token=settings.TOKEN,
-            base_url=settings.PROXY_URL, # Proxy нужен для обхода блокировок телеграма
+            base_url=settings.PROXY_URL,  # Proxy нужен для обхода блокировок телеграма
         )
         print(bot.get_me())
 
@@ -165,8 +194,8 @@ class Command(BaseCommand):
         )
         dp = updater.dispatcher
 
-        dp.add_handler(CommandHandler("start",start_command))
-        dp.add_handler(CommandHandler("help",help_command))
+        dp.add_handler(CommandHandler("start", start_command))
+        dp.add_handler(CommandHandler("help", help_command))
         dp.add_handler(MessageHandler(Filters.text, who_are_you))
         # dp.add_handler(MessageHandler(Filters.text, handle_message))
         dp.add_handler(CallbackQueryHandler(button_handler))
@@ -176,3 +205,14 @@ class Command(BaseCommand):
         # запустить бесконечную обработку сообщений
         updater.start_polling()
         updater.idle()
+
+# ======== Webhook setting up ========
+@server.route("/")
+def webhook():
+    bot.remove_webhook()
+    s = bot.set_webhook(url='https://api.telegram.org/bot' +
+                        '1614749492:AAHcfFo3nNnLI4A27lk27Q7a6s0rDWhOG1E')
+    if s:
+        return print("webhook setup ok")
+    else:
+        return print("webhook setup failed")
