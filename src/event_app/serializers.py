@@ -1,22 +1,21 @@
 from rest_framework import serializers
-from .models import Post
+from .models import Post,PostImage
 
 
 class PostListSerializer(serializers.ModelSerializer):
+    images = serializers.CharField(read_only=True)
+
     class Meta:
         model = Post
-        fields = ('__all__')
+        exclude = ('description','phone','category')
 
 
 class PostCreateSerializer(serializers.ModelSerializer):
+    # images = serializers.CharField(read_only=True)
 
     def create(self, validated_data):
-        links = validated_data.pop('links')
         post = Post(**validated_data)
         post.save()
-        if links:
-            for i in links:
-                post.links.add(i)
         return post
 
     class Meta:
@@ -25,7 +24,7 @@ class PostCreateSerializer(serializers.ModelSerializer):
 
 
 class PostRemoveSerializer(serializers.ModelSerializer):
-
+    
     class Meta:
         model = Post
         fields = "__all__"
