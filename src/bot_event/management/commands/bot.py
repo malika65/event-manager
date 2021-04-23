@@ -98,7 +98,6 @@ class Command(BaseCommand):
         updater.idle()
 
 # ======== Webhook setting up ========
-@server.route("/")
 def webhook():
     bot.remove_webhook()
     s = bot.set_webhook(url='https://api.telegram.org/bot' +
