@@ -3,11 +3,12 @@ from .models import Post
 from .serializers import PostListSerializer, PostCreateSerializer, PostRemoveSerializer, PostEditSerializer
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, DestroyAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
-
+from .mypagination import MyLimitOffsetPagination
 
 class PostListView(ListAPIView):
     serializer_class = PostListSerializer
     queryset = Post.objects.all()
+    pagination_class = MyLimitOffsetPagination
 
 
 class PostCreateView(CreateAPIView):

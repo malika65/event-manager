@@ -27,7 +27,7 @@ class EmailRegistrateSerializer(serializers.Serializer):
         if User.objects.filter(email=email):
             user = User.objects.get(email=email)
             if user.verified:
-                raise serializers.ValidationError("this email is already registered")
+                raise serializers.ValidationError("This email is already registered")
         return data
     
 
@@ -50,7 +50,7 @@ class AuthorLoginSerializer(serializers.Serializer):
 
     def validate(self, data):
         email = data.get("email", None)
-        password = data.get("   ", None)
+        password = data.get("password", None)
         user = authenticate(email=email, password=password)
         if user is None:
             raise serializers.ValidationError(

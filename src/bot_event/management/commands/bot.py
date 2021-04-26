@@ -1,3 +1,5 @@
+import os
+
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from telegram.ext import *
@@ -11,8 +13,6 @@ from telebot.types import InputMediaPhoto, InputMediaVideo
 from datetime import date
 import sys
 import locale
-
-
 
 
 def start_command(update,context):
@@ -54,41 +54,29 @@ def button_handler(update: Update, context: CallbackContext) -> None:
     choose = query.data
 
     # Now u can define what choice ("callback_data") do what like this:
-    if choose == 'see':
-        print("See")
-
-    if choose == 'eat':
-        print("Eat")
-
-    if choose == 'enjoy':
-        print("Enjoy")
-
-    if choose == 'know':
-        print("Know")
-
-    if choose == 'active':
-        print("Active")
-
-    if choose == 'buy':
-        print("Buy")
-
-    if choose == 'top':
-        print("Top")
-    if choose == '7':
+    if choose == 'back':
         bot.editMessageReplyMarkup(chat_id=query.message.chat_id,
-    message_id=query.message.message_id,
-    reply_markup=keyboard_2
-    )
+        message_id=query.message.message_id,
+        reply_markup=keyboard_2
+        )
+    
     elif '_' in choose:
-        subchoose = choose[2:]
+        true_choose = choose[0:-2]
+        choose = choose.split('_')
+        more = int(choose[2])
+        subchoose = choose[1]
         choose = choose[0]
+        true_choose = true_choose + str(more + 2)
+        print(more)
+        print(true_chose)
         post = Post()
         if subchoose == 'sale':
-            post = Post.objects.filter(category=choose,sale=True)
+            post = Post.objects.filter(category=choose,sale=True)[more-1:more+1]
         elif subchoose == 'all':
-            post = Post.objects.filter(category=choose)
+            post = Post.objects.filter(category=choose)[more-1:more+1]
+           
         elif subchoose == 'name':
-            post = Post.objects.filter(category=choose)
+            post = Post.objects.filter(category=choose)[more-1:more+1]
             # update.message.reply_text(f"{post.title}")
 
         elif subchoose == 'near':
@@ -115,41 +103,39 @@ def button_handler(update: Update, context: CallbackContext) -> None:
                     media_group.append(InputMediaPhoto(media=url))
 
             bot.send_media_group(query.message.chat_id, media=media_group)
-
-            btn_like = [
-                [
-                    InlineKeyboardButton(f'👍 {pop.like_count}',callback_data='like'),
-                    InlineKeyboardButton(f'👎 {pop.dislike_count}',callback_data='dislike')
-                    ]
-                ]
-
-            keyboard_like = InlineKeyboardMarkup(btn_like,resize_keyboard=True)
-                    
+        
             bot.send_message(chat_id=query.message.chat_id,
-            text=f"Название : {pop.title}\nОписание : {pop.description}\nКонтакты: {pop.phone} \nМы в соц.сетях : {listToStr}",
-            reply_markup=keyboard_like
-            )
+            text=f"Название : {pop.title}\nОписание : {pop.description}\nКонтакты: {pop.phone} \nМы в соц.сетях : {listToStr}")
+        btn_more = [
+            [
+                InlineKeyboardButton('More',callback_data=f'{true_choose}'),
+                ]
+            ]
+        keyboard_more = InlineKeyboardMarkup(btn_more,resize_keyboard=False)
+
+        bot.send_message(chat_id=query.message.chat_id,text="Чтобы посмотреть больше нажмите кнопку ниже",reply_markup=keyboard_more)
+
     else:
         kb_1 = [
             [
-                InlineKeyboardButton('📆 Скоро',callback_data=f'{choose}_soon')
+                InlineKeyboardButton('📆 Скоро',callback_data=f'{choose}_soon_2')
             ],
             [
-                InlineKeyboardButton('🛒 Скидки',callback_data=f'{choose}_sale')
+                InlineKeyboardButton('🛒 Скидки',callback_data=f'{choose}_sale_2')
             ],
-            [   InlineKeyboardButton('📒 Посмотреть все',callback_data=f'{choose}_all')
+            [   InlineKeyboardButton('📒 Посмотреть все',callback_data=f'{choose}_all_2')
             ],
             [
-                InlineKeyboardButton('📝 Выбрать по названию',callback_data=f'{choose}_name')
+                InlineKeyboardButton('📝 Выбрать по названию',callback_data=f'{choose}_name_2')
                 ] ,   
             [
-                InlineKeyboardButton('🗺️ Рядом',callback_data=f'{choose}_near')
+                InlineKeyboardButton('🗺️ Рядом',callback_data=f'{choose}_near_2')
             ],
             [
-                InlineKeyboardButton('🔝 Топ 10',callback_data=f'{choose}_top')
+                InlineKeyboardButton('🔝 Топ 10',callback_data=f'{choose}_top_2')
             ],
             [
-                InlineKeyboardButton('⬅️ Назад',callback_data='7')
+                InlineKeyboardButton('⬅️ Назад',callback_data='back')
             ]
         ]
         keyboard_3 = InlineKeyboardMarkup(kb_1,resize_keyboard=True)
@@ -203,16 +189,13 @@ class Command(BaseCommand):
         dp.add_error_handler(error)
 
         # запустить бесконечную обработку сообщений
+        
         updater.start_polling()
         updater.idle()
 
-# ======== Webhook setting up ========
-@server.route("/")
-def webhook():
-    bot.remove_webhook()
-    s = bot.set_webhook(url='https://api.telegram.org/bot' +
-                        '1614749492:AAHcfFo3nNnLI4A27lk27Q7a6s0rDWhOG1E')
-    if s:
-        return print("webhook setup ok")
-    else:
-        return print("webhook setup failed")
+        # updater.start_webhook(listen="0.0.0.0",
+        #               port=int(os.environ.get("PORT", 8443)),
+        #               url_path=settings.TOKEN )
+        # updater.bot.setWebhook(settings.PROXY_URL + settings.TOKEN)
+
+        # updater.idle()
