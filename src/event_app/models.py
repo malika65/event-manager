@@ -18,8 +18,6 @@ class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, default = None)
     phone = models.CharField(max_length=100, blank=True, verbose_name='Номер телефона')
     link_list = ArrayField(models.CharField(max_length=200), blank=True)
-    like_count = models.IntegerField(blank=True,null=True,default=0)
-    dislike_count = models.IntegerField(blank=True,null=True,default=0)
     
     class Meta:
         verbose_name = 'Пост'

@@ -5,7 +5,7 @@ from django.conf import settings
 from telegram.ext import *
 from telegram.utils.request import Request
 from telegram import Bot, Update
-from .buttons import keyboard_1, keyboard_2
+from .buttons import keyboard_1, keyboard_2,get_keyboard
 from telegram import  KeyboardButton, ReplyKeyboardMarkup,InlineKeyboardButton,InlineKeyboardMarkup
 from bot_event.views import sample_response
 from event_app.models import Post,PostImage
@@ -31,18 +31,81 @@ def who_are_you(update, context):
     txt = str(update.message.text).lower()
     print(txt)
     if txt == '🤠 пользователь':
-
         update.message.reply_text("Выберите чем хотите заняться",reply_markup = keyboard_2)
     elif txt == '💸 спонсор':
         update.message.reply_text("Для регистрации перейдите на следующий сайт google.com . \nТут вы сможете опубликовать вашу информацию")
+    elif txt == 'главное меню':
+        update.message.reply_text("Главное меню",reply_markup=keyboard_2)
     else:
         response = sample_response(txt)
-
         update.message.reply_text(response)
 
 
 def error(update, context):
     print(f"Update {update} caused error {context.error}")
+
+def choose_by_name(post):
+    kb_1 = []
+    for i in post:
+        kb_1.append([InlineKeyboardButton(f'{i.title}',callback_data=f'{i.id}-posts')])
+        
+    keyboard_name = InlineKeyboardMarkup(kb_1,resize_keyboard=True)
+
+    return keyboard_name
+
+
+def print_posts(post,bot,choose,query,true_choose):
+    for pop in post:
+        image = pop.images.all()
+        image = PostImage.objects.filter(post=pop)
+        img_list= []
+        listToStr = ',\n '.join([str(elem) for elem in pop.link_list])
+
+        for i in image:
+            img_list.append(str(i.images))
+            
+        media_group = list()
+        for number, url in enumerate(img_list):
+            if number == 1 :
+                media_group.append(InputMediaPhoto(media=url))
+            else:
+                media_group.append(InputMediaPhoto(media=url))
+
+        bot.send_media_group(query.message.chat_id, media=media_group)
+        
+        bot.send_message(chat_id=query.message.chat_id,
+        text=f"Название : {pop.title}\nОписание : {pop.description}\nКонтакты: {pop.phone} \nМы в соц.сетях : {listToStr}")
+    btn_more = [
+        [
+            InlineKeyboardButton('More',callback_data=f'{true_choose}'),
+            ]
+        ]
+    keyboard_more = InlineKeyboardMarkup(btn_more,resize_keyboard=False)
+
+    bot.send_message(chat_id=query.message.chat_id,text="Чтобы посмотреть больше нажмите кнопку ниже",reply_markup=keyboard_more)
+
+def print_one_post(post,bot,query):
+    image = post.images.all()
+    image = PostImage.objects.filter(post=post)
+    img_list= []
+    listToStr = ',\n '.join([str(elem) for elem in post.link_list])
+
+    for i in image:
+        img_list.append(str(i.images))
+        
+    media_group = list()
+    for number, url in enumerate(img_list):
+        if number == 1 :
+            media_group.append(InputMediaPhoto(media=url))
+        else:
+            media_group.append(InputMediaPhoto(media=url))
+
+    bot.send_media_group(query.message.chat_id, media=media_group)
+    
+    bot.send_message(chat_id=query.message.chat_id,
+    text=f"Название : {post.title}\nОписание : {post.description}\nКонтакты: {post.phone} \nМы в соц.сетях : {listToStr}")
+
+     
 
 
 def button_handler(update: Update, context: CallbackContext) -> None:
@@ -61,23 +124,26 @@ def button_handler(update: Update, context: CallbackContext) -> None:
         )
     
     elif '_' in choose:
-        true_choose = choose[0:-2]
+        true_choose = choose[0:-1]
         choose = choose.split('_')
         more = int(choose[2])
         subchoose = choose[1]
         choose = choose[0]
         true_choose = true_choose + str(more + 2)
-        print(more)
-        print(true_chose)
         post = Post()
         if subchoose == 'sale':
             post = Post.objects.filter(category=choose,sale=True)[more-1:more+1]
+            print_posts(post,bot,choose,query,true_choose)
         elif subchoose == 'all':
             post = Post.objects.filter(category=choose)[more-1:more+1]
-           
+            print_posts(post,bot,choose,query,true_choose)
         elif subchoose == 'name':
-            post = Post.objects.filter(category=choose)[more-1:more+1]
-            # update.message.reply_text(f"{post.title}")
+            post = Post.objects.filter(category=choose)
+            keyboard_name = choose_by_name(post)
+
+            bot.editMessageReplyMarkup(chat_id=query.message.chat_id,
+            message_id=query.message.message_id,
+            reply_markup=keyboard_name)
 
         elif subchoose == 'near':
             print("Near")
@@ -85,61 +151,13 @@ def button_handler(update: Update, context: CallbackContext) -> None:
         elif subchoose == 'top':
             # Топ 
             print("Top")
-        
-        for pop in post:
-            image = pop.images.all()
-            image = PostImage.objects.filter(post=pop)
-            img_list= []
-            listToStr = ',\n '.join([str(elem) for elem in pop.link_list])
-
-            for i in image:
-                img_list.append(str(i.images))
-
-            media_group = list()
-            for number, url in enumerate(img_list):
-                if number == 1 :
-                    media_group.append(InputMediaPhoto(media=url))
-                else:
-                    media_group.append(InputMediaPhoto(media=url))
-
-            bot.send_media_group(query.message.chat_id, media=media_group)
-        
-            bot.send_message(chat_id=query.message.chat_id,
-            text=f"Название : {pop.title}\nОписание : {pop.description}\nКонтакты: {pop.phone} \nМы в соц.сетях : {listToStr}")
-        btn_more = [
-            [
-                InlineKeyboardButton('More',callback_data=f'{true_choose}'),
-                ]
-            ]
-        keyboard_more = InlineKeyboardMarkup(btn_more,resize_keyboard=False)
-
-        bot.send_message(chat_id=query.message.chat_id,text="Чтобы посмотреть больше нажмите кнопку ниже",reply_markup=keyboard_more)
-
+    elif 'posts' in choose:
+        post_id = choose.split('-')[0]
+        post = Post.objects.get(id=post_id)
+        print_one_post(post,bot,query)
+    # Add submenu
     else:
-        kb_1 = [
-            [
-                InlineKeyboardButton('📆 Скоро',callback_data=f'{choose}_soon_2')
-            ],
-            [
-                InlineKeyboardButton('🛒 Скидки',callback_data=f'{choose}_sale_2')
-            ],
-            [   InlineKeyboardButton('📒 Посмотреть все',callback_data=f'{choose}_all_2')
-            ],
-            [
-                InlineKeyboardButton('📝 Выбрать по названию',callback_data=f'{choose}_name_2')
-                ] ,   
-            [
-                InlineKeyboardButton('🗺️ Рядом',callback_data=f'{choose}_near_2')
-            ],
-            [
-                InlineKeyboardButton('🔝 Топ 10',callback_data=f'{choose}_top_2')
-            ],
-            [
-                InlineKeyboardButton('⬅️ Назад',callback_data='back')
-            ]
-        ]
-        keyboard_3 = InlineKeyboardMarkup(kb_1,resize_keyboard=True)
-        # post = Post.objects.filter(category=choose)
+        keyboard_3 = get_keyboard(choose)
         
         bot.editMessageReplyMarkup(chat_id=query.message.chat_id,
         message_id=query.message.message_id,
