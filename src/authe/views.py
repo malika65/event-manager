@@ -15,7 +15,7 @@ from django.conf import settings
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.generics import CreateAPIView, RetrieveAPIView
-from rest_framework.permissions import AllowAny,IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import Author, ConfirmCode
 from django.shortcuts import redirect
 from django.http import HttpResponsePermanentRedirect
@@ -28,10 +28,10 @@ from .utils import (
 )
 from .serializers import (
     EmailRegistrateSerializer,
-    EmailConfirmCode, 
+    EmailConfirmCode,
     AuthorLoginSerializer,
     ResetPasswordEmailRequestSerializer,
-    
+
 )
 
 
@@ -39,50 +39,59 @@ from .serializers import (
 @api_view(['POST'])
 def email_register(request):
     serializer = EmailRegistrateSerializer(data=request.data)
-    serializer.is_valid(raise_exception = True)
+    serializer.is_valid(raise_exception=True)
     email = serializer.data['email']
     password = serializer.data['password']
-    author = Author(email=email)
-    author.set_password(password)
-    author.save()
-    code = ConfirmCode.objects.create(author=author)
-    send_verified_link(f'Ваш код поддтверждения почты {code.code}/', email)
+
+    # If author with such data doesn't exist (successful registration)
+    if not Author.objects.filter(email=email):
+        author = Author(email=email)
+        author.set_password(password)
+        author.save()
+        code = ConfirmCode.objects.create(author=author)
+        send_verified_link(f'Ваш код поддтверждения почты {code.code}/', email)
+    else:
+        return Response({
+            "success": False,
+            "data": "User with such data already exists"},
+            status.HTTP_406_NOT_ACCEPTABLE
+        )
+
     return Response({
-        "success":True,
-        "data":"User created"},
+        "success": True,
+        "data": "User created"},
         status.HTTP_201_CREATED
     )
 
 
 @api_view(['GET'])
-def confirm_email(request,code):
-    confirm = EmailConfirmCode(data={"code":code})
+def confirm_email(request, code):
+    confirm = EmailConfirmCode(data={"code": code})
     confirm.is_valid(raise_exception=True)
     conf_code = ConfirmCode.objects.get(code=code)
     user = conf_code.author
-    user.verified = True 
+    user.verified = True
     user.save()
     token = Token.objects.update_or_create(user_id=user.id)
 
     return Response({
-        "success":True,
-        "data": {"token":str(token[0])}},
+        "success": True,
+        "data": {"token": str(token[0])}},
         status.HTTP_200_OK
     )
 
 
-    
 # Логин
 @api_view(['POST'])
 def user_login(request):
     serializer = AuthorLoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     response = {
-        'success' : 'True',
-        'status code' : status.HTTP_200_OK,
+        'success': 'True',
+        'status code': status.HTTP_200_OK,
         'message': 'User logged in  successfully',
-        'token' : serializer.data['token'],
-        }
+        'token': serializer.data['token'],
+    }
     status_code = status.HTTP_200_OK
 
     return Response(response, status=status_code)
@@ -91,30 +100,30 @@ def user_login(request):
 @api_view(['POST'])
 def request_password_reset(request):
     serializer = ResetPasswordEmailRequestSerializer(data=request.data)
-    serializer.is_valid(raise_exception = True)
+    serializer.is_valid(raise_exception=True)
     email = serializer.data['email']
     author = Author.objects.filter(email=email)
     if author:
-        code = ConfirmCode.objects.create(author=author.last(),reset=True)
-        send_verified_link(f'Чтобы подтвердить почту для сброса пароля, перейдите по ссылке - http://127.0.0.1:8000/password-reset/{code.code}/',code.author.email)
-            
+        code = ConfirmCode.objects.create(author=author.last(), reset=True)
+        send_verified_link(
+            f'Чтобы подтвердить почту для сброса пароля, перейдите по ссылке - http://127.0.0.1:8000/password-reset/{code.code}/', code.author.email)
+
         return Response({'success': 'We have sent you a link to reset your password'}, status=status.HTTP_200_OK)
-    
+
     return Response({'fail': 'There is no such user'}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
-def set_new_password(request,code):
+def set_new_password(request, code):
     if ConfirmCode.objects.filter(code=code):
-        code = ConfirmCode.objects.get(code=code,reset = True)
+        code = ConfirmCode.objects.get(code=code, reset=True)
         if not code.confirm:
             code.confirm = True
             code.save()
             new_password = get_random_string(length=8)
             code.author.set_password(new_password)
             code.author.save()
-            send_verified_link(f'Ваш пароль: {new_password}',code.author.email)
-            
+            send_verified_link(
+                f'Ваш пароль: {new_password}', code.author.email)
 
         return Response({'success': True, 'message': 'Password reset success. Check your mail for new password'}, status=status.HTTP_200_OK)
-
